@@ -1,4 +1,4 @@
-# Generating kubeconfigs for oc/kubectl Access to Managed Clusters Proxied through ACM Hub
+# Enabling API access to Private Managed Clusters via ACM Cluster Proxy Addon
 
 Use case: I have an OpenShift cluster managed by ACM but have no direct access to the managed cluster API. I want to run oc/kubectl commands against the managed cluster.
 
@@ -6,7 +6,7 @@ Want to start hacking? Jump strait to [usage](#usage).
 
 ## Background
 
-Advanced Cluster Management (ACM) ships with a `cluster-proxy-addon` that uses a reverse proxy server ([ANP](https://github.com/kubernetes-sigs/apiserver-network-proxy)) to send API requests from the hub to a managed cluster. This is particularly useful when the managed cluster API is behind a firewall or is otherwise inaccessible. Using this addon, an administrator can also build a kubeconfig file to execute remote commands against a managed cluster using oc/kubectl proxied through ACM. The [documentation](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.7/html-single/clusters/index#cluster-proxy-addon) to do this is relatively simple, but it requires a lot of text parsing and it assumes a user has access API access to both the managed cluster and the hub to do the initial configuration.
+Advanced Cluster Management (ACM) ships with a `cluster-proxy-addon` that uses a reverse proxy server ([ANP](https://github.com/kubernetes-sigs/apiserver-network-proxy)) to send API requests from the hub to a managed cluster. This is particularly useful when the managed cluster API is behind a firewall or is otherwise inaccessible. Using this addon, an administrator can also build a kubeconfig file to execute remote commands against a managed cluster using oc/kubectl proxied through ACM. The [documentation](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.7/html-single/clusters/index#cluster-proxy-addon) to do this is relatively simple, but it requires a lot of text parsing and it assumes a user has API access to both the managed cluster and the hub to do the initial configuration.
 
 This small project (ACM ARK, or Automatic Remote Kubeconfig) was designed to simplify the process of generating a 'proxied' kubeconfig outlined in the ACM documentation. It has two objectives:
 

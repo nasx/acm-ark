@@ -1,0 +1,41 @@
+- name: ACM - Automated Remote Kubectl
+  gather_facts: no
+  hosts: localhost
+  tasks:
+    - name: Deploy/Verify ACM Managed Service Account Addon
+      ansible.builtin.include_role:
+        name: acm-msa-addon
+      tags:
+        - acm-msa-addon
+    
+    - name: Create Managed Service Account on Managed Cluster
+      kubernetes.core.k8s:
+        state: present
+        resource_definition:
+          apiVersion: authentication.open-cluster-management.io/v1alpha1
+          kind: ManagedServiceAccount
+          metadata:
+            name: "{{ ark_service_account_name }}"
+            namespace: "{{ managed_cluster_name }}"
+          spec:
+            rotation: {}
+
+    - name: Wait for Managed Service Account
+      kubernetes.core.k8s_info:
+        api_version: authentication.open-cluster-management.io/v1alpha1
+        kind: ManagedServiceAccount
+        name: "{{ ark_service_account_name }}"
+        namespace: "{{ managed_cluster_name }}"
+        wait: true
+        wait_condition:
+          status: "True"
+          type: SecretCreated
+      register: msa_results
+
+    - name: Create MSA RBAC Policy
+      ansible.builtin.include_role:
+        name: acm-msa-rbac-policy
+    
+    - name: Render Remote Kubeconfig
+      ansible.builtin.include_role:
+        name: ark-gen-kubeconfig

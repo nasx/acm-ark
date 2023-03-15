@@ -1,0 +1,28 @@
+- name: Query ServiceAccount Token
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ msa_results.resources[0].status.tokenSecretRef.name }}"
+    namespace: "{{ managed_cluster_name }}"
+  register: sa_secret_results
+
+- name: Query Hub Certificate Authorities
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: kube-root-ca.crt
+    namespace: openshift-service-ca
+  register: hub_ca_results
+
+- name: Query cluster-proxy-addon-user Route
+  kubernetes.core.k8s_info:
+    api_version: route.openshift.io/v1
+    kind: Route
+    name: cluster-proxy-addon-user
+    namespace: multicluster-engine
+  register: proxy_route
+
+- name: Render Remote Kubeconfig
+  ansible.builtin.template:
+    dest: "{{ remote_kubeconfig_directory }}/{{ remote_kubeconfig_file }}"
+    src: templates/kubeconfig.j2

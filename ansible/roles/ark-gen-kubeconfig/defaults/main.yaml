@@ -1,0 +1,2 @@
+remote_kubeconfig_directory: /tmp
+remote_kubeconfig_file: "{{ managed_cluster_name }}-ark-kubeconfig"

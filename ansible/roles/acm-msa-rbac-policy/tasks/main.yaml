@@ -1,0 +1,40 @@
+- name: Create MSA RBAC Namespace
+  kubernetes.core.k8s:
+    state: present
+    resource_definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ msa_policy_namespace }}"
+  when:
+    - (msa_policy_namespace_create | default(false)) == true
+
+- name: Deploy MSA RBAC Policy
+  kubernetes.core.k8s:
+    state: present
+    template:
+      - path: templates/policy.j2
+
+- name: Deploy MSA RBAC PlacementRule
+  kubernetes.core.k8s:
+    state: present
+    template:
+      - path: templates/rule.j2
+
+- name: Deploy MSA RBAC PlacementBinding
+  kubernetes.core.k8s:
+    state: present
+    template:
+      - path: templates/binding.j2
+
+- name: Query MSA RBAC Policy
+  kubernetes.core.k8s_info:
+    api_version: policy.open-cluster-management.io/v1
+    kind: Policy
+    name: "{{ managed_cluster_name }}-ark-rbac"
+    namespace: "{{ msa_policy_namespace }}"
+  delay: 10
+  register: msa_rbac_policy_results
+  retries: 60
+  until:
+    - msa_rbac_policy_results.resources[0].status.compliant == "Compliant"

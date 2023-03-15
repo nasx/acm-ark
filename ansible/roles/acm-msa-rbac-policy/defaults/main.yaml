@@ -1,0 +1,4 @@
+msa_remote_namespace: open-cluster-management-agent-addon
+msa_remote_cluster_role: cluster-admin
+msa_policy_namespace: "{{ managed_cluster_name }}-ark-policy"
+msa_policy_namespace_create: true

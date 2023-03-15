@@ -1,0 +1,4 @@
+ark_service_account_name: acm-ark
+managed_cluster_deploy_msa_addon: true
+managed_cluster_name: cnv
+msa_remote_cluster_role: cluster-admin

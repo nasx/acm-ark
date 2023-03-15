@@ -1,0 +1,59 @@
+- name: Query MultiClusterHub Resource
+  kubernetes.core.k8s_info:
+    api_version: operator.open-cluster-management.io/v1
+    kind: MultiClusterHub
+    namespace: "{{ hub_namespace }}"
+  register: mch_results
+
+- name: Query Hub MSA Addon Status
+  ansible.builtin.set_fact:
+    msa_addon_status: "{{ mch_results | community.general.json_query(msa_addon_query) | flatten }}"
+  vars:
+    msa_addon_query: "resources[*].spec.overrides.components[?name=='managedserviceaccount-preview']"
+
+- name: Assert MSA Addon is Enabled
+  ansible.builtin.assert:
+    msg: "Managed Service Account Addon does not appear to be installed!"
+    that:
+     - msa_addon_status | count == 1
+     - msa_addon_status[0].enabled == true
+
+- name: Query for Managed Cluster Namespace
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Namespace
+    name: "{{ managed_cluster_name }}"
+  register: namespace_results
+
+- name: Assert Managed Cluster Namespace Exists
+  ansible.builtin.assert:
+    msg: "The managed cluster namespace '{{ managed_cluster_name }}' does not appear to exist!"
+    that:
+      - namespace_results.resources | count == 1
+
+- name: Query MSA Addon
+  kubernetes.core.k8s_info:
+    api_version: addon.open-cluster-management.io/v1alpha1
+    kind: ManagedClusterAddOn
+    name: managed-serviceaccount
+    namespace: "{{ managed_cluster_name }}"
+  register: addon_results
+
+- name: Deploy MSA Addon
+  kubernetes.core.k8s:
+    state: present
+    resource_definition:
+      apiVersion: addon.open-cluster-management.io/v1alpha1
+      kind: ManagedClusterAddOn
+      metadata:
+        name: managed-serviceaccount
+        namespace: "{{ managed_cluster_name }}"
+      spec:
+        installNamespace: open-cluster-management-agent-addon
+    wait: true
+    wait_condition:
+      status: "True"
+      type: Available
+  when:
+    - (managed_cluster_deploy_msa_addon | default(false)) == true
+    - addon_results.resources | count == 0

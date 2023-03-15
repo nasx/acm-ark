@@ -1,0 +1,13 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: "{{ managed_cluster_name }}-ark-rbac"
+  namespace: "{{ msa_policy_namespace }}"
+placementRef:
+  apiGroup: apps.open-cluster-management.io
+  kind: PlacementRule
+  name: "{{ managed_cluster_name }}-ark-rbac"
+subjects:
+- apiGroup: policy.open-cluster-management.io
+  kind: Policy
+  name: "{{ managed_cluster_name }}-ark-rbac"  
